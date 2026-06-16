@@ -39,8 +39,8 @@ def parse_nwchem_output(filepath: str):
             results['converged'] = True
  
         if ('Normal Eigenvalue' in line
-                and 'Infra Red Intensities' in line
-                and 'Projected' not in line
+                and 'Infra Red Intensities' in line # might need to changed to projected
+                and 'Projected' in line
                 and not already_parsed):
             in_freq_section = True
             continue  # header line itself has no data
@@ -52,8 +52,8 @@ def parse_nwchem_output(filepath: str):
                 line
             )
             if match:
-                frequencies.append(float(m.group(1)))      # frequency cm-1
-                intensities.append(float(m.group(2)))      # KM/mol column
+                frequencies.append(float(match.group(1)))      # frequency cm-1
+                intensities.append(float(match.group(2)))      # KM/mol column
             elif frequencies and set(line.strip()) <= {'-'} and line.strip():
                 in_freq_section = False
                 already_parsed = True
@@ -65,7 +65,6 @@ def parse_nwchem_output(filepath: str):
         results[f'intensity_{i+1}'] = intensity
  
     return results
-
 
 def process_folder(folder_path):
     """
