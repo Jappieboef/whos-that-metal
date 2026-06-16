@@ -2,63 +2,70 @@ import re
 import os
 import pandas as pd
 
-
-def parse_nwchem_output(filepath:str): 
-#keep a record of how freq were calculated (dft/mp2) 
+def parse_nwchem_output(filepath: str):
     """
+    Parse a NWChem output file for energy, convergence, IR frequencies and intensities.
+ 
     Args:
-        filepath (str): Takes the filepath of the nwchem output file.
-
+        filepath (str): Path to the nwchem output file.
+ 
     Returns:
-        dict: A dictionary containing:
-            - 'filename' (str): Base name of the file.
-            - 'energy' (float or None): Total DFT energy in Hartrees.
-            - 'converged' (bool): Whether geometry optimization converged.
-            - 'frequencies' (list): Vibrational frequencies (cm⁻¹).
-            - 'intensities' (list): IR intensities.
-
-        Raises:
-            FileNotFoundError: If the filepath does not exist.
-
-        Example:
-            result = parse_nwchem_output('glycine_nwchem.out')
-            print(result['energy'])
+        dict: filename, energy, converged, and freq_i / intensity_i columns.
     """
-
-    results = {'filename': os.path.basename(filepath),'energy': None,'converged': False}
+    results = {
+        'filename': os.path.basename(filepath),
+        'energy': None,
+        'converged': False,
+    }
     frequencies = []
     intensities = []
+ 
     try:
         with open(filepath, 'r') as f:
             lines = f.readlines()
     except FileNotFoundError:
-        print("File path does not exist")
-    
+        print(f"File not found: {filepath}")
+        return results
+ 
+    in_freq_section = False
+    already_parsed = False
+ 
     for line in lines:
         match = re.search(r'Total DFT energy\s*=\s*([-]?\d+\.\d+)', line)
         if match:
             results['energy'] = float(match.group(1))
-        
+ 
         if 'Optimization converged' in line:
             results['converged'] = True
-
-        freq_match = re.search(r'XXXXXXXXX', line) # still need to find the correct regex for this
-        if freq_match:
-            frequencies.append(float(freq_match.group(1)))
-        
-        int_match = re.search(r'XXXXXXXXXXX', line) # still need to find the correct regex for this
-        if int_match:
-            intensities.append(float(int_match.group(1)))
-        
-    
-    #adds an additional key-value pair for each frequency and intensity
+ 
+        if ('Normal Eigenvalue' in line
+                and 'Infra Red Intensities' in line
+                and 'Projected' not in line
+                and not already_parsed):
+            in_freq_section = True
+            continue  # header line itself has no data
+ 
+        if in_freq_section:
+            match = re.search(
+                r'^\s*\d+\s+([-]?\d+\.\d+)\s+\|\|\s+'
+                r'[-]?\d+\.\d+\s+[-]?\d+\.\d+\s+([-]?\d+\.\d+)\s+[-]?\d+\.\d+',
+                line
+            )
+            if match:
+                frequencies.append(float(m.group(1)))      # frequency cm-1
+                intensities.append(float(m.group(2)))      # KM/mol column
+            elif frequencies and set(line.strip()) <= {'-'} and line.strip():
+                in_freq_section = False
+                already_parsed = True
+ 
+    # Unpack into individual columns
     for i, freq in enumerate(frequencies):
         results[f'freq_{i+1}'] = freq
-    
     for i, intensity in enumerate(intensities):
         results[f'intensity_{i+1}'] = intensity
-    
+ 
     return results
+
 
 def process_folder(folder_path):
     """
