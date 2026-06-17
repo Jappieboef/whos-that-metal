@@ -6,12 +6,12 @@ import numpy as np
 
 import numpy as np
 
-def create_spectrum_dict(start=50, end=4000, step=5):
-    """Create zeroed spectrum dictionary with wavenumber keys."""
-    grid = np.arange(start, end + step, step)
-    return {int(wn): 0.0 for wn in grid}
+# def create_spectrum_dict(start=50, end=4000, step=5):
+#     """Create zeroed spectrum dictionary with wavenumber keys."""
+#     grid = np.arange(start, end + step, step)
+#     return {int(wn): 0.0 for wn in grid}
 
-def bin_peaks_to_dict(frequencies, intensities, start=50, end=4000, step=5):
+def bin_peaks_to_dict(frequencies:list, intensities:list, start=50, end=4000, step=5):
     """Bin peaks into nearest wavenumber bin, no broadening."""
     spectrum_dict = {int(wn): 0.0 for wn in np.arange(start, end + step, step)}
     grid = np.array(list(spectrum_dict.keys()))
