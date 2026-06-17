@@ -2,6 +2,30 @@ import re
 import os
 import pandas as pd
 
+import numpy as np
+
+import numpy as np
+
+def create_spectrum_dict(start=50, end=4000, step=5):
+    """Create zeroed spectrum dictionary with wavenumber keys."""
+    grid = np.arange(start, end + step, step)
+    return {int(wn): 0.0 for wn in grid}
+
+def bin_peaks_to_dict(frequencies, intensities, start=50, end=4000, step=5):
+    """Bin peaks into nearest wavenumber bin, no broadening."""
+    spectrum_dict = {int(wn): 0.0 for wn in np.arange(start, end + step, step)}
+    grid = np.array(list(spectrum_dict.keys()))
+    
+    for freq, intensity in zip(frequencies, intensities):
+        nearest_bin = int(round(freq / step) * step)
+        nearest_bin = max(start, min(end, nearest_bin))
+        spectrum_dict[nearest_bin] += intensity
+    
+    return spectrum_dict
+
+
+
+
 def parse_nwchem_output(filepath: str):
     """
     Parse a NWChem output file for energy, convergence, IR frequencies and intensities.
@@ -16,6 +40,7 @@ def parse_nwchem_output(filepath: str):
         'filename': os.path.basename(filepath),
         'energy': None,
         'converged': False,
+        
     }
     frequencies = []
     intensities = []
@@ -58,11 +83,8 @@ def parse_nwchem_output(filepath: str):
                 in_freq_section = False
                 already_parsed = True
  
-    # Unpack into individual columns
-    for i, freq in enumerate(frequencies):
-        results[f'freq_{i+1}'] = freq
-    for i, intensity in enumerate(intensities):
-        results[f'intensity_{i+1}'] = intensity
+    spectrum = bin_peaks_to_dict(frequencies, intensities, step=5)
+    results.update({f'spec_{wn}': val for wn, val in spectrum.items()})
  
     return results
 
