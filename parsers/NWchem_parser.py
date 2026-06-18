@@ -3,10 +3,6 @@ import os
 import pandas as pd
 import numpy as np
 
-# def create_spectrum_dict(start=50, end=4000, step=5):
-#     """Create zeroed spectrum dictionary with wavenumber keys."""
-#     grid = np.arange(start, end + step, step)
-#     return {int(wn): 0.0 for wn in grid}
 
 def bin_peaks_to_dict(frequencies:list, intensities:list, start=50, end=4000, step=5):
     """Bin peaks into nearest wavenumber bin, no broadening."""
@@ -98,7 +94,7 @@ def process_folder(folder_path,legacy_df:pd):
     """
 
     already_processed = set()
-    if legacy_df is not None: #meaning a legacy DF exsists now have to put it in a set
+    if legacy_df is not None: #meaning a legacy DF exists now have to put it in a set
         already_processed = set(legacy_df['filename'].tolist())
     
     all_results = []
@@ -126,7 +122,7 @@ def data_frame_concat(df,legacy_df):
     """
     Args:
         df (DF): The newly parsed data dataframe
-        legacy_df (DF): brings in the already exsisting dataframe
+        legacy_df (DF): brings in the already existing dataframe
 
     Returns:
         dataframe : A concatinated version of the two dataframes
@@ -153,9 +149,8 @@ def main():
         combined_df = df
 
 
-
-    combined_df.to_csv(output_path, index=False)
     os.makedirs('data', exist_ok=True)
+    combined_df.to_csv(output_path, index=False)
     print(f"Results saved to {output_path}")
 
 
