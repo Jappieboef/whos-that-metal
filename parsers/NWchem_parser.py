@@ -11,7 +11,7 @@ import numpy as np
 def bin_peaks_to_dict(frequencies:list, intensities:list, start=50, end=4000, step=5):
     """Bin peaks into nearest wavenumber bin, no broadening."""
     spectrum_dict = {int(wn): 0.0 for wn in np.arange(start, end + step, step)}
- 
+    grid = np.array(list(spectrum_dict.keys()))
     
     for freq, intensity in zip(frequencies, intensities):
         nearest_bin = int(round(freq / step) * step)
