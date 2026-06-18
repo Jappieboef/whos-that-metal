@@ -3,10 +3,6 @@ import os
 import pandas as pd
 import numpy as np
 
-# def create_spectrum_dict(start=50, end=4000, step=5):
-#     """Create zeroed spectrum dictionary with wavenumber keys."""
-#     grid = np.arange(start, end + step, step)
-#     return {int(wn): 0.0 for wn in grid}
 
 def bin_peaks_to_dict(frequencies:list, intensities:list, start=50, end=4000, step=5):
     """Bin peaks into nearest wavenumber bin, no broadening."""
@@ -39,6 +35,8 @@ def parse_nwchem_output(filepath: str):
         'converged': False,
         
     }
+
+
     frequencies = []
     intensities = []
  
@@ -85,21 +83,30 @@ def parse_nwchem_output(filepath: str):
  
     return results
 
-def process_folder(folder_path):
+def process_folder(folder_path,legacy_df:pd):
     """
     Args:
         folder_path (str): takes in the folder path to where all the data resides.
+        legacy_df (pd): takes in either an exisiting dataframe from previous runs or is set to none for the first itteration
 
     Returns:
         list : returns a list of dictionaries containing the parsed data from 'parse_nwchem_out'
     """
 
+    already_processed = set()
+    if legacy_df is not None: #meaning a legacy DF exists now have to put it in a set
+        already_processed = set(legacy_df['filename'].tolist())
+    
     all_results = []
     for filename in os.listdir(folder_path):
         if filename.endswith('.out'):
-            filepath = os.path.join(folder_path, filename)
+            filepath = os.path.relpath(os.path.join(folder_path, filename))
+            if filename in already_processed:
+                print(f"Skipping {filepath} — already in CSV")
+                continue #skips the itteration if the filepath already exsits meaning it will not be reparsed
             results = parse_nwchem_output(filepath)
             all_results.append(results)
+    
     return all_results
 
 def data_frame_results(all_results):
@@ -111,19 +118,39 @@ def data_frame_results(all_results):
     df = pd.DataFrame(all_results)
     return df
 
+def data_frame_concat(df,legacy_df):
+    """
+    Args:
+        df (DF): The newly parsed data dataframe
+        legacy_df (DF): brings in the already existing dataframe
+
+    Returns:
+        dataframe : A concatinated version of the two dataframes
+    """
+    combined_df = pd.concat([legacy_df, df], ignore_index=True)
+    return combined_df
+
+
 def main():
     folder_path = 'data'
     output_path = 'data/nwchem_results.csv' 
-    #how do I make this better? does it need to be improved?^
-    
-    all_results = process_folder(folder_path)
-    for results in all_results:
-        print(results)
+
+    if os.path.exists(output_path): # checks to make sure the file exists
+        legacy_df = pd.read_csv(output_path) #if it does exist that means there must be a legacy CSV
+    else:
+        legacy_df = None #if not sets the dataframe to none
+    all_results = process_folder(folder_path,legacy_df) #
+
     
     df = data_frame_results(all_results)
-    
+    if legacy_df is not None:
+        combined_df = data_frame_concat(df,legacy_df)
+    else:
+        combined_df = df
+
+
     os.makedirs('data', exist_ok=True)
-    df.to_csv(output_path, index=False)
+    combined_df.to_csv(output_path, index=False)
     print(f"Results saved to {output_path}")
 
 
