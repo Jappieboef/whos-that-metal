@@ -7,10 +7,9 @@ import numpy as np
 def bin_peaks_to_dict(frequencies:list, intensities:list, start=50, end=4000, step=5):
     """Bin peaks into nearest wavenumber bin, no broadening."""
     spectrum_dict = {int(wn): 0.0 for wn in np.arange(start, end + step, step)}
-    grid = np.array(list(spectrum_dict.keys()))
     
-    for freq, intensity in zip(frequencies, intensities):
-        nearest_bin = int(round(freq / step) * step)
+    for freq, intensity in zip(frequencies, intensities): #zips the contents of feq and int together so they can be itterated together to esure parrell connections
+        nearest_bin = int(round(freq / step) * step) #rounding math to put it in its closest bin
         nearest_bin = max(start, min(end, nearest_bin))
         spectrum_dict[nearest_bin] += intensity
     
@@ -49,11 +48,17 @@ def parse_nwchem_output(filepath: str):
  
     in_freq_section = False
     already_parsed = False
+    dft_total_flag = False
  
     for line in lines:
-        match = re.search(r'Total DFT energy\s*=\s*([-]?\d+\.\d+)', line)
-        if match:
-            results['energy'] = float(match.group(1))
+        match_1 = re.search(r'NWChem Nuclear Hessian and Frequency Analysis', line) #sets off flag to ensure we grab the calculation we want
+        if match_1:
+            dft_total_flag = True
+        if dft_total_flag:
+            match_2 = re.search(r'Total DFT energy\s*=\s*([-]?\d+\.\d+)', line)
+            if match_2:
+                results['energy'] = float(match_2.group(1))
+                dft_total_flag = False
  
         if 'Optimization converged' in line:
             results['converged'] = True
@@ -133,7 +138,7 @@ def data_frame_concat(df,legacy_df):
 
 def main():
     folder_path = 'data'
-    output_path = 'data/nwchem_results.csv' 
+    output_path = 'data/nwchem_results.csv'  #think of a way this needs to be changed
 
     if os.path.exists(output_path): # checks to make sure the file exists
         legacy_df = pd.read_csv(output_path) #if it does exist that means there must be a legacy CSV
