@@ -4,7 +4,8 @@ import pandas as pd
 import numpy as np
 
 
-def bin_peaks_to_dict(frequencies:list, intensities:list, start=50, end=4000, step=5):
+def bin_peaks_to_dict(frequencies:list, intensities:list, start=50, end=4000, step=5): #change the step for fine tuning
+    #NOTE if you change the step it cannot be parsed into the same dataframe as pervious data MUST be Homogenus
     """Bin peaks into nearest wavenumber bin, no broadening."""
     spectrum_dict = {int(wn): 0.0 for wn in np.arange(start, end + step, step)}
     
@@ -28,6 +29,7 @@ def parse_nwchem_output(filepath: str):
     Returns:
         dict: filename, energy, converged, and freq_i / intensity_i columns.
     """
+    #initialize the dictonary that will be returned at the end of the function, later to be converted to a pd
     results = {
         'filename': os.path.basename(filepath),
         'energy': None,
@@ -35,22 +37,23 @@ def parse_nwchem_output(filepath: str):
         
     }
 
-
+    #every "sample" will need a new list of fequencies and intesnsities
     frequencies = []
     intensities = []
  
-    try:
-        with open(filepath, 'r') as f:
+    try:                                                                    #try block possibly redundant <---
+        with open(filepath, 'r') as f: #opens the specified "*.out" file
             lines = f.readlines()
     except FileNotFoundError:
         print(f"File not found: {filepath}")
-        return results
+        return results # If a file is not found returns the results incase its a partial extraction
  
+    #starts all the flags as False
     in_freq_section = False
     already_parsed = False
     dft_total_flag = False
  
-    for line in lines:
+    for line in lines: #itterated through every line of the .out file
         match_1 = re.search(r'NWChem Nuclear Hessian and Frequency Analysis', line) #sets off flag to ensure we grab the calculation we want
         if match_1:
             dft_total_flag = True
@@ -58,7 +61,7 @@ def parse_nwchem_output(filepath: str):
             match_2 = re.search(r'Total DFT energy\s*=\s*([-]?\d+\.\d+)', line)
             if match_2:
                 results['energy'] = float(match_2.group(1))
-                dft_total_flag = False
+                dft_total_flag = False # turns the flag back off the moment it finds the total DFT energy specified
  
         if 'Optimization converged' in line:
             results['converged'] = True
@@ -73,22 +76,22 @@ def parse_nwchem_output(filepath: str):
         if in_freq_section:
             match = re.search(
                 r'^\s*\d+\s+([-]?\d+\.\d+)\s+\|\|\s+'
-                r'[-]?\d+\.\d+\s+[-]?\d+\.\d+\s+([-]?\d+\.\d+)\s+[-]?\d+\.\d+',
+                r'[-]?\d+\.\d+\s+[-]?\d+\.\d+\s+([-]?\d+\.\d+)\s+[-]?\d+\.\d+', #long line of regular expression built with https://regex101.com/
                 line
             )
             if match:
                 frequencies.append(float(match.group(1)))      # frequency cm-1
                 intensities.append(float(match.group(2)))      # KM/mol column
-            elif frequencies and set(line.strip()) <= {'-'} and line.strip():
+            elif frequencies and set(line.strip()) <= {'-'} and line.strip(): #looking for the end of the specific freq we want
                 in_freq_section = False
-                already_parsed = True
+                already_parsed = True #setting the flags to ensure only the data we want is collected and nothing more
  
-    spectrum = bin_peaks_to_dict(frequencies, intensities, step=5)
-    results.update({f'spec_{wn}': val for wn, val in spectrum.items()})
+    spectrum = bin_peaks_to_dict(frequencies, intensities, step=5) #calls the binning function from above
+    results.update({f'spec_{wn}': val for wn, val in spectrum.items()}) # appends the newly binned data to the results dict
  
     return results
 
-def process_folder(folder_path,legacy_df:pd):
+def process_folder(folder_path:str,legacy_df:pd):
     """
     Args:
         folder_path (str): takes in the folder path to where all the data resides.
@@ -120,7 +123,7 @@ def data_frame_results(all_results):
         dataframe : Pandas Dataframe from the dictionary produced from the 'parse_nwchem_output'
     """
 
-    df = pd.DataFrame(all_results)
+    df = pd.DataFrame(all_results) #calls from the pandas library
     return df
 
 def data_frame_concat(df,legacy_df):
@@ -138,7 +141,7 @@ def data_frame_concat(df,legacy_df):
 
 def main():
     folder_path = 'data'
-    output_path = 'data/nwchem_results.csv'  #think of a way this needs to be changed
+    output_path = 'data/nwchem_results.csv'         #       <---think of a way this needs to be changed NOTE
 
     if os.path.exists(output_path): # checks to make sure the file exists
         legacy_df = pd.read_csv(output_path) #if it does exist that means there must be a legacy CSV
@@ -147,14 +150,17 @@ def main():
     all_results = process_folder(folder_path,legacy_df) #
 
     
-    df = data_frame_results(all_results)
-    if legacy_df is not None:
+    #concatinating logic is below 
+    #reconstructs old CSV as "legacy_dataframe" then makes the new dataframe based on everything thats not seen in legacy
+    #finally the result is concatinated together
+    df = data_frame_results(all_results) 
+    if legacy_df is not None: 
         combined_df = data_frame_concat(df,legacy_df)
     else:
         combined_df = df
 
 
-    os.makedirs('data', exist_ok=True)
+    os.makedirs('data', exist_ok=True) #making the directory if it does not exist within the local repo
     combined_df.to_csv(output_path, index=False)
     print(f"Results saved to {output_path}")
 
