@@ -2,6 +2,7 @@ import re
 import os
 import pandas as pd
 import numpy as np
+import argparse
 
 
 def bin_peaks_to_dict(frequencies:list, intensities:list, start=50, end=4000, step=5): #change the step for fine tuning
@@ -31,11 +32,26 @@ def parse_nwchem_output(filepath: str):
     """
     #initialize the dictonary that will be returned at the end of the function, later to be converted to a pd
     results = {
-        'filename': os.path.basename(filepath),
-        'energy': None,
-        'converged': False,
-        
+        'filename':     os.path.basename(filepath),
+        'amino_acid':   None,
+        'metal':        None,
+        'confirmation': None,
+        'basis':        None,
+        'theory':       None,
+        'smiles':       np.nan,
+        'energy':       None,
+        'converged':    False,
     }
+
+    un_parsed_name = os.path.splitext(results['filename'])[0]
+    un_parsed_name_lst = un_parsed_name.split('_')
+
+    results['amino_acid']   = un_parsed_name_lst[0]
+    results['metal']        = un_parsed_name_lst[1]
+    results['confirmation'] = un_parsed_name_lst[2]
+    results['basis']        = un_parsed_name_lst[3]
+    results['theory']       = un_parsed_name_lst[4]
+
 
     #every "sample" will need a new list of fequencies and intesnsities
     frequencies = []
@@ -55,11 +71,11 @@ def parse_nwchem_output(filepath: str):
  
     for line in lines: #itterated through every line of the .out file
         match_1 = re.search(r'NWChem Nuclear Hessian and Frequency Analysis', line) #sets off flag to ensure we grab the calculation we want
-        if match_1:
+        if match_1: #check 1
             dft_total_flag = True
         if dft_total_flag:
             match_2 = re.search(r'Total DFT energy\s*=\s*([-]?\d+\.\d+)', line)
-            if match_2:
+            if match_2: #check 2
                 results['energy'] = float(match_2.group(1))
                 dft_total_flag = False # turns the flag back off the moment it finds the total DFT energy specified
  
@@ -91,7 +107,7 @@ def parse_nwchem_output(filepath: str):
  
     return results
 
-def process_folder(folder_path:str,legacy_df:pd):
+def process_folder(folder_path:str,legacy_df:pd.DataFrame):
     """
     Args:
         folder_path (str): takes in the folder path to where all the data resides.
@@ -140,27 +156,29 @@ def data_frame_concat(df,legacy_df):
 
 
 def main():
-    folder_path = 'data'
-    output_path = 'data/nwchem_results.csv'         #       <---think of a way this needs to be changed NOTE
+    parser = argparse.ArgumentParser(description='Parse NWChem output files')
+    parser.add_argument('--folder', type=str, default='data',
+                        help='Folder containing .out files')
+    parser.add_argument('--output', type=str, default='data/nwchem_results.csv',
+                        help='Path to output CSV')
+    args = parser.parse_args()
 
-    if os.path.exists(output_path): # checks to make sure the file exists
-        legacy_df = pd.read_csv(output_path) #if it does exist that means there must be a legacy CSV
+    folder_path = args.folder
+    output_path = args.output
+
+    if os.path.exists(output_path):
+        legacy_df = pd.read_csv(output_path)
     else:
-        legacy_df = None #if not sets the dataframe to none
-    all_results = process_folder(folder_path,legacy_df) #
+        legacy_df = None
+    all_results = process_folder(folder_path, legacy_df)
 
-    
-    #concatinating logic is below 
-    #reconstructs old CSV as "legacy_dataframe" then makes the new dataframe based on everything thats not seen in legacy
-    #finally the result is concatinated together
-    df = data_frame_results(all_results) 
-    if legacy_df is not None: 
-        combined_df = data_frame_concat(df,legacy_df)
+    df = data_frame_results(all_results)
+    if legacy_df is not None:
+        combined_df = data_frame_concat(df, legacy_df)
     else:
         combined_df = df
 
-
-    os.makedirs('data', exist_ok=True) #making the directory if it does not exist within the local repo
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     combined_df.to_csv(output_path, index=False)
     print(f"Results saved to {output_path}")
 
