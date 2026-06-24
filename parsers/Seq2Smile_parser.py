@@ -69,6 +69,10 @@ def process_directory(input_dir: str, legacy_df=None) -> list:
 
 
 def main():
+    """
+    how to run demo - 
+                    python parsers/Seq2Smile_parser.py --input AH_CO+2 --output data/smiles_results.csv
+    """
     parser = argparse.ArgumentParser(description='Parse seq2mSMILES summary files')
     parser.add_argument('--input', type=str, required=True,
                         help='Path to root directory containing summary.tsv files')
