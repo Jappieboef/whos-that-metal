@@ -3,6 +3,5 @@ __pycache__/
 *.pyc
 .DS_Store
 *.egg-info/
-data/*.out
 data/*.csv
 plot
