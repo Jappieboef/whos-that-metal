@@ -84,7 +84,9 @@ NWchem_parser_V2.py \
 ## Output Format
 
 | filename | energy | converged | Amino Acid | Confirmation | Basis | Theory| spec_50 | spec_55 | ... | spec_4000 |
+
 |---|---|---|---|---|---|---|
+
 | data/AA_Cu_C1_B1_T1.out | -284.42 | True | AA | Cu | {Basis} | {Theory} | 0.0 | 0.0 | ... | 1.785 |
 
 ---
