@@ -1,0 +1,6 @@
+label	kind	resnum	aa	aa3	atom_name	atom_idx	element	count	raw_database_score	local_database_score	path_flexibility_score	seed_proximity	donor_kind_bias	final_candidate_score	his_partner_idx	his_tautomer_candidate
+His2:ND1	sidechain	2	H	HIS	ND1	14.0	N	551	0.17447751741608614	0.17447751741608614	1.0	1.0	1.0	0.5459626345788473	11.0	True
+His2:NE2	sidechain	2	H	HIS	NE2	11.0	N	3158	1.0	1.0	1.0	1.0	1.0	1.0	14.0	True
+Ala1:Nterm_N	nterm	1	A	ALA	N	0.0	N	4	0.001266624445851805	0.001266624445851805	1.0	1.0	0.7	0.42069664344521845		False
+His2:backbone_N	backbone	2	H	HIS	N	5.0	N	12	0.0037998733375554147	0.0037998733375554147	1.0	1.0	0.3	0.3820899303356555		False
+water_O	solvent	0	SOL	HOH	O		O	3517	1.0	0.4	1.0	0.0	1.0	0.4		False
