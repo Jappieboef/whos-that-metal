@@ -1,7 +1,5 @@
-import re
 import os
 import pandas as pd
-import numpy as np
 import argparse
 
 
@@ -89,7 +87,7 @@ def main():
 
     if all_results:
         df = pd.DataFrame(all_results)
-        if legacy_df is not None:
+        if legacy_df is not None: #the base case if no data has been established 
             combined_df = pd.concat([legacy_df, df], ignore_index=True)
         else:
             combined_df = df
