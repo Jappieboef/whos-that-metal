@@ -1,0 +1,7 @@
+map_num	label	kind	resnum	atom_name	count	local_database_score	path_flexibility_score	seed_proximity	final_candidate_score	his_partner_idx	his_tautomer_candidate
+1	His2:NE2	sidechain	2	NE2	3158	1.0	1.0	1.0	1.0	14.0	True
+2	water_O1	solvent	0	O	3517	0.4	1.0	0.0	0.4		False
+3	Ala1:Nterm_N	nterm	1	N	4	0.001266624445851805	1.0	1.0	0.42069664344521845		False
+4	water_O2	solvent	0	O	3517	0.4	1.0	0.0	0.4		False
+5	water_O3	solvent	0	O	3517	0.4	1.0	0.0	0.4		False
+6	water_O4	solvent	0	O	3517	0.4	1.0	0.0	0.4		False

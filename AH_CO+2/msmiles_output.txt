@@ -1,0 +1,1 @@
+[Co+2]|[NH2:3][C@H](C(=O)N[C@H](C(=O)O)Cc1[n:1]c[nH]c1)C|[OH2:2]|[OH2:4]|[OH2:5]|[OH2:6]|6_octahedral

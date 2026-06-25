@@ -1,0 +1,13 @@
+sequence	AH
+metal_database_key	CO
+metal_label	CO+2
+metal_token	[Co+2]
+metal_input	Co
+metal_element	Co
+metal_charge	2
+geometry	6_octahedral
+coordination_number	6
+cn_count	1959
+shape_count	0
+final_score	0.699597
+msmiles	[Co+2]|[NH2:3][C@H](C(=O)N[C@H](C(=O)O)Cc1[n:1]c[nH]c1)C|[OH2:2]|[OH2:4]|[OH2:5]|[OH2:6]|6_octahedral
