@@ -35,6 +35,7 @@ def parse_nwchem_output(filepath: str):
         'filename':     os.path.basename(filepath),
         'amino_acid':   None,
         'metal':        None,
+        'mol_name':     None,
         'confirmation': None,
         'basis':        None,
         'theory':       None,
@@ -48,6 +49,7 @@ def parse_nwchem_output(filepath: str):
 
     results['amino_acid']   = un_parsed_name_lst[0]
     results['metal']        = un_parsed_name_lst[1]
+    results['mol_name']     = un_parsed_name_lst[0] + "_" + un_parsed_name_lst[1]
     results['confirmation'] = un_parsed_name_lst[2]
     results['basis']        = un_parsed_name_lst[3]
     results['theory']       = un_parsed_name_lst[4]
