@@ -37,12 +37,11 @@ def parse_summary(filepath: str) -> list:
         {
             'amino_acid': aa,
             'metal': metal,
+            'mol_name': aa + "_"+ metal,
             'smiles': smiles,
             'coordination_number': coordination_number,
-            'conformation': conf
         }
-        for conf in [1, 2, 3]
-    ] #not enttirelt sure on this part ^ why do we need 3 combinations?
+    ]
     
 
 def process_directory(input_dir: str, legacy_df=None) -> list:
@@ -59,7 +58,7 @@ def process_directory(input_dir: str, legacy_df=None) -> list:
                 filepath = os.path.join(root, file)
                 results = parse_summary(filepath)
                 for result in results:
-                    key = (result['amino_acid'], result['metal'], result['conformation'])
+                    key = (result['amino_acid'], result['metal'])
                     if key in already_processed:
                         print(f"Skipping {key} — already in CSV")
                         continue #skips it if the data already exists in the CSV
