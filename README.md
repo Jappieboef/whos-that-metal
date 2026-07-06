@@ -1,6 +1,6 @@
 # IR Spectra Pipeline
 
-A Python pipeline for parsing NWChem DFT output files and extracting IR spectroscopic data for use in machine learning workflows. Built as part of the SIMCODES REU program at Iowa State University.
+A Python pipeline for parsing NWChem and xTB DFT output files into IR spectroscopic data for use in machine learning workflows. Built as part of the SIMCODES REU program at Iowa State University.
 
 ---
 
@@ -9,13 +9,20 @@ A Python pipeline for parsing NWChem DFT output files and extracting IR spectros
 ```
 IR_SPEC_pipeline/
 ├── data/
-│   └── AA_Cu_C1_B1_T1.out(example file)            # NWChem .out files and output CSV
-├── matplot/
-│   └── data_plot.py                                # Plotting utilities
+│   ├── *.out                             # Example NWChem/xTB output files
+│   └── *_results.csv                     # Parsed output CSVs
 ├── parsers/
-│   └── NWchem_parser.py
+│   ├── NWchem_parser_V2.py               # Parses NWChem .out files -> CSV
+│   ├── xtb_parser_edited.py              # Parses xTB .out files -> CSV
+│   └── Seq2Smile_parser.py               # Parses seq2mSMILES summary.tsv files -> CSV
+├── modules/
+│   ├── SMILESappend.py                   # Merges SMILES values into nwchem_results.csv
+│   └── broaden_spectrum.py               # Gaussian-broadens a parsed spectrum CSV
+├── data_exploration/
+│   └── Convergence_check.py              # Reports % of converged geometries in a CSV
+├── matplot/
+│   └── data_plot.py                      # Plots each molecule's IR spectrum to NWChem_Plots/
 ├── requirements.txt
-├── run.sh
 └── README.md
 ```
 
@@ -23,11 +30,13 @@ IR_SPEC_pipeline/
 
 ## What It Does
 
-- Parses NWChem DFT frequency calculation output files (`.out`)
+- Parses NWChem and xTB frequency-calculation output files (`.out`)
 - Extracts total DFT energy, geometry convergence status, vibrational frequencies (cm⁻¹), and IR intensities (KM/mol)
 - Bins IR intensities into a fixed-width wavenumber grid (50–4000 cm⁻¹, step 5) suitable for ML model input
-- Incrementally updates the output CSV — already processed files are skipped on subsequent runs
-- Supports multiple basis set folders, tracking files by relative path to avoid duplicate processing
+- Incrementally updates the output CSV — files already present (by filename) are skipped on subsequent runs
+- Extracts SMILES strings and coordination numbers from seq2mSMILES `summary.tsv` files and can merge them into parsed results
+- Applies optional Gaussian broadening to binned spectra so linear compression (SVD/PCA) has structure to exploit
+- Plots each parsed molecule's IR spectrum to PNG for quick visual inspection
 
 ---
 
@@ -53,41 +62,71 @@ pip install -r requirements.txt
 
 ---
 
-## How to Run
+## File Naming Convention
 
-**Step 0** — Run your NWChem frequency calculations. Each calculation must include both `task dft optimize` and `task dft freq` to produce the IR data needed by this pipeline.
+Both the NWChem and xTB parsers derive `amino_acid`, `metal`, `confirmation`, `basis`, and `theory` from the filename, so `.out` files must follow this 5-field, underscore-separated convention:
 
-**Step 1** — Place your `.out` files inside the `data/` folder. You can organize them into subfolders by basis set:
-
-***FILES MUST FOLLOW THIS CONVENTION AA_Cu_C1_B1_T1.out (amino acid, metal, confirmation, basis, theory)***
 ```
-data/
-├── 6-31G/
-│   └── glycine_nwchem.out
-└── cc-pVDZ/
-    └── glycine_nwchem.out
+AA_Metal_Confirmation_Basis_Theory.out
 ```
 
-**Step 2** — Run the parser with input and output:
-```bash
-NWchem_parser_V2.py \
-    --folder /../test_data \        #use your own pathing
-    --output /../parsed/nwchem_results.csv
-```
-
-
-**Output** — Results are saved to `/parsed/nwchem_results.csv`. Each row represents one molecule, with columns for energy, convergence, and IR intensity at each wavenumber bin (`spec_50`, `spec_55`, ..., `spec_4000`), along with metadata about the sample.
+Examples currently in `data/`: `AA_Cu_C1_B1_T1.out`, `AA_Co+2_C4_0_xtb.out`.
 
 ---
 
+## How to Run
+
+**Step 0** — Run your NWChem (`task dft optimize` + `task dft freq`) or xTB frequency calculations.
+
+**Step 1 — Parse NWChem output:**
+```bash
+python parsers/NWchem_parser_V2.py \
+    --folder data \
+    --output data/nwchem_results.csv
+```
+
+**Step 1 (alt) — Parse xTB output:**
+```bash
+python parsers/xtb_parser_edited.py \
+    --folder data \
+    --output data/xtb_results.csv
+```
+Both default to `--folder data` if omitted; xTB additionally skips any filename that doesn't split into 5 underscore-separated fields.
+
+**Step 2 (optional) — Parse SMILES/coordination data from seq2mSMILES output:**
+```bash
+python parsers/Seq2Smile_parser.py --input AH_CO+2 --output data/smiles_results.csv
+```
+Walks `--input` recursively for `summary.tsv` files and extracts `msmiles` and `coordination_number` per amino acid/metal pair.
+
+**Step 3 (optional) — Apply Gaussian broadening to a parsed spectrum CSV:**
+```bash
+python modules/broaden_spectrum.py --input data/nwchem_results.csv --output data/nwchem_results_broadened.csv
+```
+
+**Step 4 (optional) — Plot parsed spectra:**
+```bash
+python matplot/data_plot.py
+```
+Reads `data/nwchem_results.csv` and writes one PNG per molecule to `NWChem_Plots/`, skipping any plot that already exists.
+
+**Step 5 (optional) — Check convergence rate of a parsed CSV:**
+```bash
+python data_exploration/Convergence_check.py
+```
+Currently hardcoded to read `data/xtb_results_cleantest.csv`; edit the path to point at another parsed CSV.
+
+> `modules/SMILESappend.py` is a one-off script that merges SMILES values from `data/fake_test_results.csv` into `data/nwchem_results.csv` — it has hardcoded paths and is intended as a reference for writing similar merge steps rather than a general-purpose CLI tool.
+
+---
 
 ## Output Format
 
-| filename | energy | converged | Amino Acid | Confirmation | Basis | Theory| spec_50 | spec_55 | ... | spec_4000 |
+Both parsers produce the same schema:
 
-|---|---|---|---|---|---|---|
-
-| data/AA_Cu_C1_B1_T1.out | -284.42 | True | AA | Cu | {Basis} | {Theory} | 0.0 | 0.0 | ... | 1.785 |
+| filename | amino_acid | metal | mol_name | confirmation | basis | theory | smiles | energy | converged | spec_50 | spec_55 | ... | spec_4000 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| AA_Cu_C1_B1_T1.out | AA | Cu | AA_Cu | C1 | B1 | T1 | NaN | -284.42 | True | 0.0 | 0.0 | ... | 1.785 |
 
 ---
 
