@@ -1,6 +1,6 @@
 import pandas as pd
 
-df = pd.read_csv("data/xtb_results.csv")
+df = pd.read_csv("data/xtb_results_cleantest.csv")
 print(df.info()) # Note: Added () to properly call info()
 
 conv_cnt = df['converged'].sum()
