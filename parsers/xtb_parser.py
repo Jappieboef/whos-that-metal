@@ -66,7 +66,7 @@ def parse_xtb_output(filepath: str):
 
     for line in lines:
         #total energy
-        energy_match = energy_pattern.match(line)
+        energy_match = energy_pattern.match(line)   
         if energy_match:
             results['energy'] = float(energy_match.group(1))
             continue
@@ -185,6 +185,8 @@ def main():
         combined_df = df
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    print(f"Saving to: {output_path}")
+    print(f"Rows: {len(combined_df)}")
     combined_df.to_csv(output_path, index=False)
     print(f"Results saved to {output_path}")
 
