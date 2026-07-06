@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 #Loads the CSV file containing the NWChem results into a DataFrame and prints it to the console to view.
-df=pd.read_csv('data/nwchem_results.csv')
+df=pd.read_csv('data/nwchem_results.csv') #change name depending on what data file you want to plot
 #print(df)
 
 #this only grabs the columns that start with 'spec_' and stores them in a list called spec_column. It then sorts the list based on the integer value that comes after 'spec_' in the column name.
