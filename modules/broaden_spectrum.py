@@ -28,12 +28,12 @@ def gaussian_broaden_spectra(df: pd.DataFrame, step: int = 5, fwhm: float = 20.0
 def main():
     """
     how to run demo -
-                    python modules/broaden_spectrum.py --input data/nwchem_results.csv --output data/nwchem_results_broadened.csv
+                    python modules/broaden_spectrum.py --input data/xtb_results_cleantest.csv --output data/xtb_results_broadened.csv
     """
     parser = argparse.ArgumentParser(description="Apply Gaussian broadening to binned NWChem IR spectra")
-    parser.add_argument("--input", type=str, default="data/nwchem_results.csv",
-                        help="Path to the parsed NWChem results CSV")
-    parser.add_argument("--output", type=str, default="data/nwchem_results_broadened.csv",
+    parser.add_argument("--input", type=str, default="data/xtb_results_cleantest.csv",
+                        help="Path to the parsed xtb/NWChem results CSV")
+    parser.add_argument("--output", type=str, default="data/xtb_results_broadened.csv",
                         help="Path to write the broadened CSV")
     parser.add_argument("--step", type=int, default=5, help="Wavenumber bin width used by the parser (cm-1)")
     parser.add_argument("--fwhm", type=float, default=20.0, help="Gaussian linewidth, full width at half max (cm-1)")
