@@ -7,9 +7,9 @@ from matplotlib.colors import LinearSegmentedColormap
 
 
 
-INPUT = "data/xtb_results_cleantest.csv" #change this based on your dataset
+INPUT = "data/vibspectrum_broadened.csv" #change this based on your dataset
 OUTPUT_DIR = "matplot" #change this for the name you want your file to have
-OUTPUT_FILE = os.path.join(OUTPUT_DIR, "spectra_overview.png")
+OUTPUT_FILE = os.path.join(OUTPUT_DIR, "spectra_overview_vibspectrum.png")
 
 # color pallatte imported
 BLUE_RAMP = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"]
