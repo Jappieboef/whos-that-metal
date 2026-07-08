@@ -6,4 +6,6 @@ __pycache__/
 data/*.csv
 plot
 graphify-out
+/figures
+/prediction_models
 
