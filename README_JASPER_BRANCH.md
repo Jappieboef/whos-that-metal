@@ -24,6 +24,12 @@ The repository covers two halves of the project:
 
 ---
 
+## Graphical Overview
+
+![Project overview: pipeline and results](Visuals/graphical_overview.jpg)
+
+---
+
 ## Repository structure
 
 Only files tracked by git are listed below. Anything not shown here (e.g. a
@@ -72,6 +78,7 @@ IR_SPEC_pipeline/
 │
 ├── Visuals/                               # generated result figures
 │   ├── gb_confusion.png                  # Gradient Boosting confusion matrix
+│   ├── graphical_overview.jpg            # combined pipeline + results overview (for README)
 │   ├── lda_confusion_matrix.png          # LDA confusion matrix
 │   ├── pca_metal_separation.png          # PCA projection of metal complexes
 │   ├── spectra_overview_vibspectrum.png  # IR spectra overview by metal
