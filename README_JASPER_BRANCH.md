@@ -6,10 +6,7 @@ Author: Jasper Steenwinkel · Mentor: Dr. Theresa Windus
 ## Overview
 
 This project identifies which metal (Co²⁺, Cu²⁺, Ni²⁺, or Zn²⁺) is bound in an
-amino-acid–metal complex directly from its IR spectrum, using machine learning,
-as a non-destructive alternative to mass spectrometry. Non-destructive
-identification would allow rare-earth / transition metals to be measured and
-then recovered or recycled.
+amino-acid–metal complex directly from its IR spectrum, using machine learning. allow rare-earth / transition metals to be measured and then recovered or recycled.
 
 The repository covers two halves of the project:
 1. A **data pipeline** that turns raw quantum-chemistry output (NWChem, xTB)
@@ -42,8 +39,9 @@ IR_SPEC_pipeline/
 ├── requirements.txt
 ├── .gitignore
 │
-├── data/
-│   └── .gitkeep                          # placeholder — real spectra CSVs are not tracked
+├── Extracted_data/
+│   └── newcomer                          # contains the raw extracted datafiles in a csv format
+    └── Vibspectrum_broadened.csv         # Contains the broadened raw data
 │
 ├── parsers/                              # raw quantum-chem output → structured data
 │   ├── NWchem_parser_V2.py               # parses NWChem DFT output
