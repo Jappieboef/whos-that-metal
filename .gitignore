@@ -3,7 +3,6 @@ __pycache__/
 *.pyc
 .DS_Store
 *.egg-info/
-data/*.csv
 plot
 graphify-out
 /figures
