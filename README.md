@@ -1,12 +1,12 @@
 # IR_Spec_2026 — ML Identification of Metals from IR Spectra
 
 **SIMCODES REU 2026 · Iowa State University**
-Author: Jasper Steenwinkel · Mentor: Dr. Theresa Windus
+Author: Jasper Steenwinkel · Mentor: Dr. Theresa Windus, Sunera Wijeratne
 
 ## Overview
 
 This project identifies which metal (Co²⁺, Cu²⁺, Ni²⁺, or Zn²⁺) is bound in an
-amino-acid–metal complex directly from its IR spectrum, using machine learning. allow rare-earth / transition metals to be measured and then recovered or recycled.
+amino-acid–metal complex directly from its IR spectrum, using machine learning. This is so that we can allow rare-earth / transition metals to be measured and then recovered or recycled.
 
 The repository covers two halves of the project:
 1. A **data pipeline** that turns raw quantum-chemistry output (NWChem, xTB)
